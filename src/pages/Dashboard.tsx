@@ -38,7 +38,7 @@ export default function Dashboard() {
 
 const styles: Record<string, React.CSSProperties> = {
   container: {
-    minHeight: "100vh",
+    height: "100%",
     display: "flex",
     flexDirection: "column",
   },
@@ -63,6 +63,6 @@ const styles: Record<string, React.CSSProperties> = {
   },
   mapWrap: {
     flex: 1,
-    minHeight: 400,
+    minHeight: 0,
   },
 };
