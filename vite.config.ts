@@ -1,9 +1,9 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 
-// base: "/centinela/" cuando se decida el nombre del repo de GitHub Pages
-// (Prompt 7 del plan) — se deja "/" mientras tanto para desarrollo local.
+// GitHub Pages sirve esto en https://ddat03.github.io/centinela-dashboard/ —
+// en desarrollo local (npm run dev) Vite ignora el base y sigue en "/".
 export default defineConfig({
   plugins: [react()],
-  base: "/",
+  base: "/centinela-dashboard/",
 });
