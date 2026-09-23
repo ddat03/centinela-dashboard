@@ -30,7 +30,6 @@ export interface Dispositivo {
   modo_robado: boolean;
   ultimo_checkin: number | null;
   bateria: number | null;
-  wifi_confianza: string[];
   recovery_token: string | null;
   recovery_token_actualizado: number | null;
   dead_man_switch_alertado?: boolean;
@@ -46,13 +45,13 @@ export interface UbicacionDoc {
 
 export type TipoEvento =
   | "sim_removido"
-  | "wifi_desconocido"
   | "intento_fallido"
   | "dead_man_switch"
   | "modo_robado_activado"
   | "modo_robado_desactivado"
   | "comando_ejecutado"
   | "sin_conexion_prolongada"
+  | "reconexion_con_foto"
   | "encontrado_reporte";
 
 export interface EventoDoc {

@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 
 import {
-  actualizarWifiConfianza,
   enviarComando,
   setModoRobado,
   subscribeComandos,
@@ -17,13 +16,13 @@ const AUDIO_ADVERTENCIA =
 
 const ETIQUETAS_EVENTO: Record<string, string> = {
   sim_removido: "SIM removido/cambiado",
-  wifi_desconocido: "Se desconectó del wifi de confianza",
   intento_fallido: "Intento de desbloqueo fallido",
   dead_man_switch: "Dejó de reportar (dead man's switch)",
   modo_robado_activado: "Modo robado activado",
   modo_robado_desactivado: "Modo robado desactivado",
   comando_ejecutado: "Comando ejecutado",
   sin_conexion_prolongada: "Sin conexión por tiempo prolongado",
+  reconexion_con_foto: "Se reconectó — foto de quien tenía el equipo",
   encontrado_reporte: "Alguien escaneó el QR de recuperación",
 };
 
@@ -54,7 +53,6 @@ export default function PanelDispositivo({ dispositivo, ubicacion, uid }: Props)
   const [comandoPendiente, setComandoPendiente] = useState<ComandoPendiente | null>(null);
   const [confirmarModoRobado, setConfirmarModoRobado] = useState<boolean | null>(null);
   const [mensajePantalla, setMensajePantalla] = useState("");
-  const [nuevoWifi, setNuevoWifi] = useState("");
 
   useEffect(() => {
     const unsubEventos = subscribeEventos(dispositivo.id, setEventos);
@@ -83,28 +81,6 @@ export default function PanelDispositivo({ dispositivo, ubicacion, uid }: Props)
       setMensajePantalla("");
     } catch {
       alert("No se pudo enviar el comando — revisá tu conexión e intentá de nuevo.");
-    }
-  }
-
-  async function agregarWifi() {
-    const ssid = nuevoWifi.trim();
-    if (!ssid) return;
-    try {
-      await actualizarWifiConfianza(dispositivo.id, [...dispositivo.wifi_confianza, ssid]);
-      setNuevoWifi("");
-    } catch {
-      alert("No se pudo agregar la red — revisá tu conexión e intentá de nuevo.");
-    }
-  }
-
-  async function quitarWifi(ssid: string) {
-    try {
-      await actualizarWifiConfianza(
-        dispositivo.id,
-        dispositivo.wifi_confianza.filter((w) => w !== ssid),
-      );
-    } catch {
-      alert("No se pudo quitar la red — revisá tu conexión e intentá de nuevo.");
     }
   }
 
@@ -232,32 +208,6 @@ export default function PanelDispositivo({ dispositivo, ubicacion, uid }: Props)
           ))}
         </ul>
       )}
-
-      <h3 style={styles.seccionTitulo}>Wifi de confianza</h3>
-      <div style={styles.mensajeForm}>
-        <input
-          style={styles.input}
-          placeholder="Nombre de la red (SSID)"
-          value={nuevoWifi}
-          onChange={(e) => setNuevoWifi(e.target.value)}
-        />
-        <button style={styles.comandoBtn} onClick={agregarWifi} disabled={!nuevoWifi.trim()}>
-          Agregar
-        </button>
-      </div>
-      <div style={styles.chips}>
-        {dispositivo.wifi_confianza.map((ssid) => (
-          <span key={ssid} style={styles.chip}>
-            {ssid}
-            <button style={styles.chipRemove} onClick={() => quitarWifi(ssid)}>
-              ×
-            </button>
-          </span>
-        ))}
-        {dispositivo.wifi_confianza.length === 0 && (
-          <span style={styles.textoMuted}>Sin redes configuradas todavía.</span>
-        )}
-      </div>
 
       <h3 style={styles.seccionTitulo}>Historial de eventos</h3>
       <ul style={styles.listaEventos}>
@@ -432,31 +382,6 @@ const styles: Record<string, React.CSSProperties> = {
     background: "var(--bg-muted)",
     color: "var(--text)",
     fontSize: 13,
-  },
-  chips: {
-    display: "flex",
-    flexWrap: "wrap",
-    gap: 8,
-    marginTop: 10,
-  },
-  chip: {
-    display: "flex",
-    alignItems: "center",
-    gap: 6,
-    padding: "6px 10px",
-    borderRadius: 999,
-    background: "var(--bg-muted)",
-    border: "1px solid var(--border)",
-    fontSize: 12,
-  },
-  chipRemove: {
-    border: "none",
-    background: "none",
-    color: "var(--text-muted)",
-    cursor: "pointer",
-    fontSize: 14,
-    lineHeight: 1,
-    padding: 0,
   },
   textoMuted: { fontSize: 13, color: "var(--text-muted)" },
   listaChica: { listStyle: "none", padding: 0, margin: "8px 0 0", display: "flex", flexDirection: "column", gap: 6 },

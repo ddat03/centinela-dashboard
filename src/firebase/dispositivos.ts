@@ -89,13 +89,6 @@ export async function setModoRobado(
   });
 }
 
-export async function actualizarWifiConfianza(
-  deviceId: string,
-  wifiConfianza: string[],
-): Promise<void> {
-  await updateDoc(doc(db, "dispositivos", deviceId), { wifi_confianza: wifiConfianza });
-}
-
 export async function enviarComando(
   deviceId: string,
   tipo: TipoComando,
