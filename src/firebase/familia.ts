@@ -37,7 +37,7 @@ const CARACTERES_CODIGO = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // sin 0/O ni 1/I
 // Ajustes de familia.
 export async function generarCodigoInvitacion(familiaId: string): Promise<string> {
   let codigo = "";
-  for (let i = 0; i < 6; i++) {
+  for (let i = 0; i < 8; i++) {
     codigo += CARACTERES_CODIGO[Math.floor(Math.random() * CARACTERES_CODIGO.length)];
   }
   await updateDoc(doc(db, "familias", familiaId), { codigo_invitacion: codigo });

@@ -204,7 +204,14 @@ export default function PanelDispositivo({ dispositivo, ubicacion, uid }: Props)
           {comandos.slice(0, 5).map((c) => (
             <li key={c.id} style={styles.itemChico}>
               <span>{ETIQUETAS_COMANDO[c.tipo]}</span>
-              <span style={estiloEstadoComando(c.estado)}>{c.estado}</span>
+              <span style={styles.itemChicoDerecha}>
+                {c.resultado_url && (
+                  <a href={c.resultado_url} target="_blank" rel="noreferrer" style={styles.link}>
+                    Ver
+                  </a>
+                )}
+                <span style={estiloEstadoComando(c.estado)}>{c.estado}</span>
+              </span>
             </li>
           ))}
         </ul>
@@ -241,7 +248,15 @@ export default function PanelDispositivo({ dispositivo, ubicacion, uid }: Props)
         {eventos.length === 0 && <li style={styles.textoMuted}>Sin eventos registrados todavía.</li>}
         {eventos.map((e) => (
           <li key={e.id} style={styles.itemEvento}>
-            <span>{ETIQUETAS_EVENTO[e.tipo] ?? e.tipo}</span>
+            <div style={styles.eventoTextoGroup}>
+              <span>{ETIQUETAS_EVENTO[e.tipo] ?? e.tipo}</span>
+              {e.detalle && <span style={styles.eventoDetalle}>{e.detalle}</span>}
+              {e.foto_url && (
+                <a href={e.foto_url} target="_blank" rel="noreferrer" style={styles.link}>
+                  Ver foto
+                </a>
+              )}
+            </div>
             <span style={styles.eventoFecha}>{formatearFecha(e.timestamp)}</span>
           </li>
         ))}
@@ -430,6 +445,8 @@ const styles: Record<string, React.CSSProperties> = {
   textoMuted: { fontSize: 13, color: "var(--text-muted)" },
   listaChica: { listStyle: "none", padding: 0, margin: "8px 0 0", display: "flex", flexDirection: "column", gap: 6 },
   itemChico: { display: "flex", justifyContent: "space-between", fontSize: 13 },
+  itemChicoDerecha: { display: "flex", alignItems: "center", gap: 10 },
+  link: { color: "var(--alert)", fontSize: 12, fontWeight: 600, textDecoration: "none" },
   listaEventos: { listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: 8 },
   itemEvento: {
     display: "flex",
@@ -439,5 +456,7 @@ const styles: Record<string, React.CSSProperties> = {
     borderBottom: "1px solid var(--border)",
     paddingBottom: 8,
   },
+  eventoTextoGroup: { display: "flex", flexDirection: "column", gap: 2 },
+  eventoDetalle: { fontSize: 12, color: "var(--text-muted)" },
   eventoFecha: { color: "var(--text-muted)", whiteSpace: "nowrap" },
 };
