@@ -33,6 +33,7 @@ export interface Dispositivo {
   wifi_confianza: string[];
   recovery_token: string | null;
   recovery_token_actualizado: number | null;
+  dead_man_switch_alertado?: boolean;
 }
 
 export interface UbicacionDoc {
