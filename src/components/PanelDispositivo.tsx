@@ -67,29 +67,45 @@ export default function PanelDispositivo({ dispositivo, ubicacion, uid }: Props)
 
   async function confirmarCambioModoRobado() {
     if (confirmarModoRobado === null) return;
-    await setModoRobado(dispositivo.id, confirmarModoRobado, uid);
-    setConfirmarModoRobado(null);
+    try {
+      await setModoRobado(dispositivo.id, confirmarModoRobado, uid);
+      setConfirmarModoRobado(null);
+    } catch {
+      alert("No se pudo cambiar el modo robado — revisá tu conexión e intentá de nuevo.");
+    }
   }
 
   async function confirmarComando() {
     if (!comandoPendiente) return;
-    await enviarComando(dispositivo.id, comandoPendiente.tipo, uid, comandoPendiente.parametros);
-    setComandoPendiente(null);
-    setMensajePantalla("");
+    try {
+      await enviarComando(dispositivo.id, comandoPendiente.tipo, uid, comandoPendiente.parametros);
+      setComandoPendiente(null);
+      setMensajePantalla("");
+    } catch {
+      alert("No se pudo enviar el comando — revisá tu conexión e intentá de nuevo.");
+    }
   }
 
   async function agregarWifi() {
     const ssid = nuevoWifi.trim();
     if (!ssid) return;
-    await actualizarWifiConfianza(dispositivo.id, [...dispositivo.wifi_confianza, ssid]);
-    setNuevoWifi("");
+    try {
+      await actualizarWifiConfianza(dispositivo.id, [...dispositivo.wifi_confianza, ssid]);
+      setNuevoWifi("");
+    } catch {
+      alert("No se pudo agregar la red — revisá tu conexión e intentá de nuevo.");
+    }
   }
 
   async function quitarWifi(ssid: string) {
-    await actualizarWifiConfianza(
-      dispositivo.id,
-      dispositivo.wifi_confianza.filter((w) => w !== ssid),
-    );
+    try {
+      await actualizarWifiConfianza(
+        dispositivo.id,
+        dispositivo.wifi_confianza.filter((w) => w !== ssid),
+      );
+    } catch {
+      alert("No se pudo quitar la red — revisá tu conexión e intentá de nuevo.");
+    }
   }
 
   return (

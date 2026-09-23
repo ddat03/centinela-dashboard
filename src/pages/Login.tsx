@@ -3,6 +3,24 @@ import React, { useState } from "react";
 
 import { auth } from "../firebase/config";
 
+// Mismo criterio que movil/app/onboarding/index.tsx — sin esto, contraseña
+// incorrecta y sin conexión mostraban exactamente el mismo mensaje.
+function mensajeError(err: unknown): string {
+  const codigo = (err as { code?: string } | null)?.code;
+  switch (codigo) {
+    case "auth/invalid-credential":
+    case "auth/wrong-password":
+    case "auth/user-not-found":
+      return "Email o contraseña incorrectos.";
+    case "auth/network-request-failed":
+      return "Sin conexión a internet.";
+    case "auth/too-many-requests":
+      return "Demasiados intentos seguidos — esperá un minuto.";
+    default:
+      return `Algo salió mal.${codigo ? ` (${codigo})` : ""}`;
+  }
+}
+
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -15,8 +33,8 @@ export default function Login() {
     setSubmitting(true);
     try {
       await signInWithEmailAndPassword(auth, email, password);
-    } catch {
-      setError("Email o contraseña incorrectos.");
+    } catch (err) {
+      setError(mensajeError(err));
     } finally {
       setSubmitting(false);
     }

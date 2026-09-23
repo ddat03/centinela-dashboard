@@ -151,6 +151,8 @@ function AjustesFamilia({ familia }: { familia: Familia }) {
         umbral_intentos_fallidos: intentos,
         umbral_dead_man_switch_min: minutos,
       });
+    } catch {
+      alert("No se pudieron guardar los ajustes — revisá tu conexión e intentá de nuevo.");
     } finally {
       setGuardando(false);
     }
@@ -160,6 +162,8 @@ function AjustesFamilia({ familia }: { familia: Familia }) {
     setGenerandoCodigo(true);
     try {
       await generarCodigoInvitacion(familia.id);
+    } catch {
+      alert("No se pudo generar el código — revisá tu conexión e intentá de nuevo.");
     } finally {
       setGenerandoCodigo(false);
     }
