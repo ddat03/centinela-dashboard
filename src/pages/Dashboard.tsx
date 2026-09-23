@@ -4,7 +4,12 @@ import React, { useEffect, useMemo, useState } from "react";
 import MapaDispositivos from "../components/MapaDispositivos";
 import PanelDispositivo from "../components/PanelDispositivo";
 import { auth } from "../firebase/config";
-import { actualizarUmbrales, getUserProfile, subscribeFamilia } from "../firebase/familia";
+import {
+  actualizarUmbrales,
+  generarCodigoInvitacion,
+  getUserProfile,
+  subscribeFamilia,
+} from "../firebase/familia";
 import { subscribeDispositivos, subscribeUltimaUbicacion } from "../firebase/dispositivos";
 import type { Dispositivo, Familia, UbicacionDoc } from "../types";
 
@@ -137,6 +142,7 @@ function AjustesFamilia({ familia }: { familia: Familia }) {
   const [intentos, setIntentos] = useState(familia.umbral_intentos_fallidos);
   const [minutos, setMinutos] = useState(familia.umbral_dead_man_switch_min);
   const [guardando, setGuardando] = useState(false);
+  const [generandoCodigo, setGenerandoCodigo] = useState(false);
 
   async function guardar() {
     setGuardando(true);
@@ -150,8 +156,32 @@ function AjustesFamilia({ familia }: { familia: Familia }) {
     }
   }
 
+  async function generarCodigo() {
+    setGenerandoCodigo(true);
+    try {
+      await generarCodigoInvitacion(familia.id);
+    } finally {
+      setGenerandoCodigo(false);
+    }
+  }
+
   return (
     <div style={styles.ajustesForm}>
+      <div>
+        <span style={styles.codigoLabel}>Código de invitación</span>
+        {familia.codigo_invitacion ? (
+          <div style={styles.codigoBox}>{familia.codigo_invitacion}</div>
+        ) : (
+          <button style={styles.ajustesGuardar} onClick={generarCodigo} disabled={generandoCodigo}>
+            {generandoCodigo ? "Generando..." : "Generar código"}
+          </button>
+        )}
+        <p style={styles.codigoAyuda}>
+          Compartilo con tu familia — lo escriben al registrarse para unirse a este
+          mismo grupo en vez de crear uno nuevo.
+        </p>
+      </div>
+
       <label style={styles.ajustesLabel}>
         Intentos fallidos antes de la foto
         <input
@@ -254,6 +284,19 @@ const styles: Record<string, React.CSSProperties> = {
     background: "var(--bg-muted)",
     color: "var(--text)",
   },
+  codigoLabel: { fontSize: 12, color: "var(--text-muted)" },
+  codigoBox: {
+    marginTop: 4,
+    padding: "8px 10px",
+    borderRadius: 6,
+    background: "var(--bg-muted)",
+    border: "1px solid var(--border)",
+    fontFamily: "monospace",
+    fontSize: 16,
+    letterSpacing: 2,
+    textAlign: "center",
+  },
+  codigoAyuda: { fontSize: 11, color: "var(--text-muted)", marginTop: 6, lineHeight: 1.4 },
   ajustesGuardar: {
     padding: "8px 10px",
     borderRadius: 6,

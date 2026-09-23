@@ -16,6 +16,7 @@ export interface Familia {
   miembros: string[];
   umbral_intentos_fallidos: number;
   umbral_dead_man_switch_min: number;
+  codigo_invitacion: string;
 }
 
 export type FuenteUbicacion = "datos" | "wifi" | "buffer";
