@@ -40,7 +40,18 @@ export default function Dashboard() {
     if (!familiaId) return;
     return subscribeDispositivos(familiaId, (lista) => {
       setDispositivos(lista);
-      setSeleccionadoId((actual) => actual ?? lista[0]?.id ?? null);
+      // Firestore no garantiza ningún orden particular en una query simple
+      // — sin esto, si alguna vez queda más de un dispositivo con el mismo
+      // nombre (ej. tras reinstalar la app, que genera un ID local nuevo),
+      // el panel podía terminar mostrando/controlando por defecto uno viejo
+      // y muerto en vez del que el celular realmente está usando ahora.
+      setSeleccionadoId((actual) => {
+        if (actual && lista.some((d) => d.id === actual)) return actual;
+        const masReciente = [...lista].sort(
+          (a, b) => (b.ultimo_checkin ?? 0) - (a.ultimo_checkin ?? 0),
+        )[0];
+        return masReciente?.id ?? null;
+      });
     });
   }, [familiaId]);
 
@@ -87,7 +98,12 @@ export default function Dashboard() {
                       background: d.modo_robado ? "var(--alert)" : "var(--normal)",
                     }}
                   />
-                  {d.nombre}
+                  <span style={styles.itemDispositivoTexto}>
+                    {d.nombre}
+                    <span style={styles.itemDispositivoCheckin}>
+                      {formatearCheckin(d.ultimo_checkin)}
+                    </span>
+                  </span>
                 </button>
               </li>
             ))}
@@ -257,6 +273,16 @@ function AjustesFamilia({ familia, miUid }: { familia: Familia; miUid: string })
   );
 }
 
+function formatearCheckin(ts: number | null): string {
+  if (!ts) return "sin datos";
+  const diffMin = Math.round((Date.now() - ts) / 60_000);
+  if (diffMin < 1) return "hace instantes";
+  if (diffMin < 60) return `hace ${diffMin} min`;
+  const diffH = Math.round(diffMin / 60);
+  if (diffH < 24) return `hace ${diffH} h`;
+  return `hace ${Math.round(diffH / 24)} d`;
+}
+
 const styles: Record<string, React.CSSProperties> = {
   container: {
     height: "100%",
@@ -313,6 +339,8 @@ const styles: Record<string, React.CSSProperties> = {
     background: "var(--bg-elevated)",
   },
   dot: { width: 8, height: 8, borderRadius: 4, flexShrink: 0 },
+  itemDispositivoTexto: { display: "flex", flexDirection: "column", gap: 2, minWidth: 0 },
+  itemDispositivoCheckin: { fontSize: 11, color: "var(--text-muted)" },
   sinDispositivos: { padding: 12, fontSize: 13, color: "var(--text-muted)" },
   ajustesFamilia: { marginTop: "auto", padding: 12, borderTop: "1px solid var(--border)" },
   linkAjustes: {
