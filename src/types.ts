@@ -74,4 +74,5 @@ export interface ComandoDoc {
   estado: EstadoComando;
   resultado_url?: string | null;
   parametros?: Record<string, unknown> | null;
+  detalle?: string | null;
 }

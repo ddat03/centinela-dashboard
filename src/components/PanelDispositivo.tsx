@@ -194,16 +194,21 @@ export default function PanelDispositivo({ dispositivo, ubicacion, uid }: Props)
       {comandos.length > 0 && (
         <ul style={styles.listaChica}>
           {comandos.slice(0, 5).map((c) => (
-            <li key={c.id} style={styles.itemChico}>
-              <span>{ETIQUETAS_COMANDO[c.tipo]}</span>
-              <span style={styles.itemChicoDerecha}>
-                {c.resultado_url && (
-                  <a href={c.resultado_url} target="_blank" rel="noreferrer" style={styles.link}>
-                    Ver
-                  </a>
-                )}
-                <span style={estiloEstadoComando(c.estado)}>{c.estado}</span>
-              </span>
+            <li key={c.id} style={styles.itemChicoColumna}>
+              <div style={styles.itemChico}>
+                <span>{ETIQUETAS_COMANDO[c.tipo]}</span>
+                <span style={styles.itemChicoDerecha}>
+                  {c.resultado_url && (
+                    <a href={c.resultado_url} target="_blank" rel="noreferrer" style={styles.link}>
+                      Ver
+                    </a>
+                  )}
+                  <span style={estiloEstadoComando(c.estado)}>{c.estado}</span>
+                </span>
+              </div>
+              {c.estado === "fallido" && c.detalle && (
+                <span style={styles.detalleError}>{c.detalle}</span>
+              )}
             </li>
           ))}
         </ul>
@@ -385,8 +390,10 @@ const styles: Record<string, React.CSSProperties> = {
   },
   textoMuted: { fontSize: 13, color: "var(--text-muted)" },
   listaChica: { listStyle: "none", padding: 0, margin: "8px 0 0", display: "flex", flexDirection: "column", gap: 6 },
+  itemChicoColumna: { display: "flex", flexDirection: "column", gap: 2 },
   itemChico: { display: "flex", justifyContent: "space-between", fontSize: 13 },
   itemChicoDerecha: { display: "flex", alignItems: "center", gap: 10 },
+  detalleError: { fontSize: 11, color: "var(--alert)" },
   link: { color: "var(--alert)", fontSize: 12, fontWeight: 600, textDecoration: "none" },
   listaEventos: { listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: 8 },
   itemEvento: {
