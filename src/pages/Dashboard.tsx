@@ -7,11 +7,13 @@ import { auth } from "../firebase/config";
 import {
   actualizarUmbrales,
   generarCodigoInvitacion,
+  getMiembrosInfo,
   getUserProfile,
+  quitarMiembro,
   subscribeFamilia,
 } from "../firebase/familia";
 import { subscribeDispositivos, subscribeUltimaUbicacion } from "../firebase/dispositivos";
-import type { Dispositivo, Familia, UbicacionDoc } from "../types";
+import type { Dispositivo, Familia, UbicacionDoc, UserProfile } from "../types";
 
 export default function Dashboard() {
   const [user, setUser] = useState<User | null>(null);
@@ -104,8 +106,8 @@ export default function Dashboard() {
               >
                 {mostrarAjustesFamilia ? "Ocultar ajustes" : "Ajustes de familia"}
               </button>
-              {mostrarAjustesFamilia && (
-                <AjustesFamilia familia={familia} />
+              {mostrarAjustesFamilia && user && (
+                <AjustesFamilia familia={familia} miUid={user.uid} />
               )}
             </div>
           )}
@@ -138,11 +140,30 @@ export default function Dashboard() {
   );
 }
 
-function AjustesFamilia({ familia }: { familia: Familia }) {
+function AjustesFamilia({ familia, miUid }: { familia: Familia; miUid: string }) {
   const [intentos, setIntentos] = useState(familia.umbral_intentos_fallidos);
   const [minutos, setMinutos] = useState(familia.umbral_dead_man_switch_min);
   const [guardando, setGuardando] = useState(false);
   const [generandoCodigo, setGenerandoCodigo] = useState(false);
+  const [miembros, setMiembros] = useState<UserProfile[]>([]);
+  const [quitandoUid, setQuitandoUid] = useState<string | null>(null);
+
+  useEffect(() => {
+    getMiembrosInfo(familia.miembros).then(setMiembros);
+  }, [familia.miembros]);
+
+  async function handleQuitar(uid: string, nombre: string) {
+    if (uid === familia.admin_uid) return; // el admin no se puede sacar a sí mismo
+    if (!confirm(`¿Sacar a ${nombre} de la familia?`)) return;
+    setQuitandoUid(uid);
+    try {
+      await quitarMiembro(familia.id, uid);
+    } catch {
+      alert("No se pudo sacar al miembro — revisá tu conexión e intentá de nuevo.");
+    } finally {
+      setQuitandoUid(null);
+    }
+  }
 
   async function guardar() {
     setGuardando(true);
@@ -184,6 +205,29 @@ function AjustesFamilia({ familia }: { familia: Familia }) {
           Compartilo con tu familia — lo escriben al registrarse para unirse a este
           mismo grupo en vez de crear uno nuevo.
         </p>
+      </div>
+
+      <div>
+        <span style={styles.codigoLabel}>Miembros ({miembros.length})</span>
+        <ul style={styles.listaMiembros}>
+          {miembros.map((m) => (
+            <li key={m.uid} style={styles.itemMiembro}>
+              <span>
+                {m.nombre} {m.uid === miUid && <em style={styles.vosTag}>(vos)</em>}
+                {m.uid === familia.admin_uid && <span style={styles.adminTag}>admin</span>}
+              </span>
+              {m.uid !== familia.admin_uid && (
+                <button
+                  style={styles.quitarBtn}
+                  onClick={() => handleQuitar(m.uid, m.nombre)}
+                  disabled={quitandoUid === m.uid}
+                >
+                  {quitandoUid === m.uid ? "..." : "Quitar"}
+                </button>
+              )}
+            </li>
+          ))}
+        </ul>
       </div>
 
       <label style={styles.ajustesLabel}>
@@ -301,6 +345,41 @@ const styles: Record<string, React.CSSProperties> = {
     textAlign: "center",
   },
   codigoAyuda: { fontSize: 11, color: "var(--text-muted)", marginTop: 6, lineHeight: 1.4 },
+  listaMiembros: {
+    listStyle: "none",
+    margin: "6px 0 0",
+    padding: 0,
+    display: "flex",
+    flexDirection: "column",
+    gap: 6,
+  },
+  itemMiembro: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    fontSize: 13,
+    padding: "6px 8px",
+    borderRadius: 6,
+    background: "var(--bg-muted)",
+  },
+  vosTag: { color: "var(--text-muted)", fontStyle: "normal", fontSize: 11 },
+  adminTag: {
+    marginLeft: 6,
+    fontSize: 10,
+    padding: "1px 6px",
+    borderRadius: 999,
+    background: "var(--normal-muted)",
+    color: "var(--normal)",
+  },
+  quitarBtn: {
+    fontSize: 11,
+    padding: "4px 8px",
+    borderRadius: 6,
+    border: "1px solid var(--alert)",
+    background: "transparent",
+    color: "var(--alert)",
+    cursor: "pointer",
+  },
   ajustesGuardar: {
     padding: "8px 10px",
     borderRadius: 6,

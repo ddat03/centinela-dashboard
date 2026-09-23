@@ -1,4 +1,5 @@
 import {
+  arrayRemove,
   doc,
   getDoc,
   onSnapshot,
@@ -12,6 +13,17 @@ import type { Familia, UserProfile } from "../types";
 export async function getUserProfile(uid: string): Promise<UserProfile | null> {
   const snap = await getDoc(doc(db, "users", uid));
   return snap.exists() ? (snap.data() as UserProfile) : null;
+}
+
+// Resuelve nombre/email de cada uid de familia.miembros — las reglas de
+// Firestore ya permiten leer users/{uid} de gente de tu propia familia.
+export async function getMiembrosInfo(uids: string[]): Promise<UserProfile[]> {
+  const perfiles = await Promise.all(uids.map((uid) => getUserProfile(uid)));
+  return perfiles.filter((p): p is UserProfile => p !== null);
+}
+
+export async function quitarMiembro(familiaId: string, uid: string): Promise<void> {
+  await updateDoc(doc(db, "familias", familiaId), { miembros: arrayRemove(uid) });
 }
 
 export function subscribeFamilia(
